@@ -1,0 +1,38 @@
+{
+  "name": "@52cik/look-cli",
+  "version": "0.1.0",
+  "description": "公司自用工具",
+  "main": "index.js",
+  "bin": {
+    "look": "bin/cli"
+  },
+  "files": [
+    "bin",
+    "index.js"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/52cik/look-cli.git"
+  },
+  "keywords": [],
+  "author": "52cik",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/52cik/look-cli/issues"
+  },
+  "homepage": "https://github.com/52cik/look-cli#readme",
+  "publishConfig": {
+    "@52cik:registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "dependencies": {
+    "got": "^11.8.2",
+    "ora": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.7.10"
+  }
+}
