@@ -36,8 +36,7 @@ if (!url) {
           it[0]
         )
     )
-    .map((it) => it[1])
-    .filter((it) => !/\.map$/.test(it[0]));
+    .map((it) => it[1]);
 
   const notFound = [];
 
