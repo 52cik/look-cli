@@ -15,6 +15,8 @@ if (!url) {
   process.exit(1);
 }
 
+const filterUrl = url => !/(?:\.map$|^(?:service-worker\.js|index\.html|precache-manifest|\/static\/js\/lib\.dll))/.test(url);
+
 (async () => {
   let files = [];
 
@@ -24,18 +26,12 @@ if (!url) {
       .json();
     files = res.files;
   } catch (er) {
-    spinner.fail('manifest not found');
+    spinner.fail('asset-manifest not found');
     return;
   }
 
   const urls = Object.entries(files)
-    .filter((it) => !/\.map$/.test(it[0]))
-    .filter(
-      (it) =>
-        !/^(service-worker\.js|index\.html|precache-manifest|\/static\/js\/lib\.dll)/.test(
-          it[0]
-        )
-    )
+    .filter((it) => filterUrl(it[0]))
     .map((it) => it[1]);
 
   const notFound = [];
@@ -50,14 +46,16 @@ if (!url) {
 
   const endTime = Date.now();
 
-  if (json && notFound.length) {
-    fs.writeFileSync('urls.json', JSON.stringify(notFound, null, 2), 'utf8');
-    spinner.succeed(`done in ${(endTime - startTime) / 1000}s`);
+  const msg = `done in ${(endTime - startTime) / 1000}s, succeed ${urls.length - notFound.length}/${urls.length} files.`;
+
+  if (json) {
+    fs.writeFileSync('report.json', JSON.stringify({ 200: urls, 404: notFound }, null, 2), 'utf8');
+    spinner.succeed(`${msg} [generated report.json]`);
     return;
   }
 
-  const msg = notFound.map((it) => `${it.code} ${it.url}`).join('\n');
-  spinner.succeed(`done in ${(endTime - startTime) / 1000}s\n${msg}`);
+  const msg2 = notFound.map((it) => `${it.code} ${it.url}`).join('\n');
+  spinner.succeed(`${msg}\n${msg2}`);
 })().catch((err) => {
   spinner.fail(`fail [${err.message}]`);
 });
