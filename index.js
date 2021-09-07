@@ -15,7 +15,7 @@ if (!url) {
   process.exit(1);
 }
 
-const filterUrl = url => !/(?:\.map$|^(?:service-worker\.js|index\.html|precache-manifest|\/static\/js\/lib\.dll))/.test(url);
+const filterUrl = url => !/(?:\.(map|html?)$|^(?:service-worker\.js|index\.html|precache-manifest|\/static\/js\/lib\.dll))/.test(url);
 
 (async () => {
   let files = [];
@@ -32,6 +32,7 @@ const filterUrl = url => !/(?:\.map$|^(?:service-worker\.js|index\.html|precache
 
   const urls = Object.entries(files)
     .filter((it) => filterUrl(it[0]))
+    // .filter(it => /^static\//.test(it[0]))
     .map((it) => it[1]);
 
   const notFound = [];
