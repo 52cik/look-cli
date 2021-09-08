@@ -15,7 +15,30 @@ if (!url) {
   process.exit(1);
 }
 
-const filterUrl = url => !/(?:\.(map|html?)$|^(?:service-worker\.js|index\.html|precache-manifest|\/static\/js\/lib\.dll))/.test(url);
+const re = {
+  map: /\.map$/,
+  static: /\/static\//,
+  other: /^(?:\/static\/js\/lib\.dll)/,
+};
+
+const filterFile = (ignored) => ([name, url]) => {
+  // 忽略 .map 文件
+  if (re.map.test(name)) return false;
+
+  // 忽略非 static 下的所有文件
+  if (!re.static.test(url)) {
+    ignored.push(url);
+    return false;
+  }
+
+  // 忽略 static/js/lib.dll 开头的文件
+  if (re.other.test(name)) {
+    ignored.push(url);
+    return false;
+  }
+
+  return true;
+};
 
 (async () => {
   let files = [];
@@ -30,27 +53,34 @@ const filterUrl = url => !/(?:\.(map|html?)$|^(?:service-worker\.js|index\.html|
     return;
   }
 
+  const ignored = [];
+
   const urls = Object.entries(files)
-    .filter((it) => filterUrl(it[0]))
-    // .filter(it => /^static\//.test(it[0]))
+    .filter(filterFile(ignored))
     .map((it) => it[1]);
 
   const notFound = [];
+
+  let count = 0;
+  const total = urls.length;
 
   await Promise.all(
     urls.map((url) =>
       got.head(url).catch((er) => {
         notFound.push({ code: er.response.statusCode, url });
+      }).finally(() => {
+        count += 1;
+        spinner.text = `${count}/${total} loading...`;
       })
     )
   );
 
   const endTime = Date.now();
 
-  const msg = `done in ${(endTime - startTime) / 1000}s, succeed ${urls.length - notFound.length}/${urls.length} files.`;
+  const msg = `done in ${(endTime - startTime) / 1000}s, succeed ${total - notFound.length}/${total} files.`;
 
   if (json) {
-    fs.writeFileSync('report.json', JSON.stringify({ 200: urls, 404: notFound }, null, 2), 'utf8');
+    fs.writeFileSync('report.json', JSON.stringify({ 404: notFound, 200: urls, ignored }, null, 2), 'utf8');
     spinner.succeed(`${msg} [generated report.json]`);
     return;
   }
