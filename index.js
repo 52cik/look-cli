@@ -1,18 +1,39 @@
 const fs = require('fs');
 const got = require('got');
 const ora = require('ora');
+const { version } = require('./package.json');
 
-const spinner = ora('loading...').start();
 const startTime = Date.now();
 
 const args = process.argv.slice(2);
 
 const url = args.find((it) => it.startsWith('http'));
 const json = args.some((it) => it === '--json');
+const showVersion = args.some((it) => /-(-version|v|V)/.test(it));
+
+const help = `
+  应用资源审查工具
+
+  使用:
+    look [参数] <地址/乾坤应用跟路径>
+
+  参数:
+    --json  生成报告文件 report.json
+
+  例子:
+    look https://www.yunoa.com
+    look https://datav.puhuiboss.com/data-screen/
+    look --json https://www.yunoa.com/crm/
+`;
+
+if (showVersion) {
+  console.log(version);
+  process.exit(0);
+}
 
 if (!url) {
-  spinner.fail('invalid url');
-  process.exit(1);
+  console.log(help);
+  process.exit(0);
 }
 
 const re = {
@@ -39,6 +60,8 @@ const filterFile = (ignored) => ([name, url]) => {
 
   return true;
 };
+
+const spinner = ora('loading...').start();
 
 (async () => {
   let files = [];
@@ -70,7 +93,7 @@ const filterFile = (ignored) => ([name, url]) => {
         notFound.push({ code: er.response.statusCode, url });
       }).finally(() => {
         count += 1;
-        spinner.text = `${count}/${total} loading...`;
+        spinner.text = `loading... [${count}/${total}]`;
       })
     )
   );

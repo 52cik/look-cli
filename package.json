@@ -1,6 +1,6 @@
 {
   "name": "@52cik/look-cli",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "公司自用工具",
   "main": "index.js",
   "bin": {
