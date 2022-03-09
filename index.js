@@ -82,15 +82,20 @@ const spinner = ora('loading...').start();
     .filter(filterFile(ignored))
     .map((it) => it[1]);
 
-  const notFound = [];
+  const fail = [];
+  const success = [];
 
   let count = 0;
   const total = urls.length;
 
   await Promise.all(
     urls.map((url) =>
-      got.head(url).catch((er) => {
-        notFound.push({ code: er.response.statusCode, url });
+      got.head(url)
+      .then(() => {
+        success.push(url);
+      })
+      .catch((er) => {
+        fail.push({ code: er.response.statusCode, url });
       }).finally(() => {
         count += 1;
         spinner.text = `loading... [${count}/${total}]`;
@@ -103,7 +108,7 @@ const spinner = ora('loading...').start();
   const msg = `done in ${(endTime - startTime) / 1000}s, succeed ${total - notFound.length}/${total} files.`;
 
   if (json) {
-    fs.writeFileSync('report.json', JSON.stringify({ 404: notFound, 200: urls, ignored }, null, 2), 'utf8');
+    fs.writeFileSync('report.json', JSON.stringify({ fail, success, all: urls, ignored }, null, 2), 'utf8');
     spinner.succeed(`${msg} [generated report.json]`);
     return;
   }
