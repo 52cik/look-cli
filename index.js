@@ -21,9 +21,7 @@ const help = `
     --json  生成报告文件 report.json
 
   例子:
-    look https://www.yunoa.com
-    look https://datav.puhuiboss.com/data-screen/
-    look --json https://www.yunoa.com/crm/
+    look https://www.xxx.com
 `;
 
 if (showVersion) {
